@@ -1,0 +1,22 @@
+{
+  "name": "mobielappserver",
+  "type": "module",
+  "version": "1.0.0",
+  "description": "My NodeJS Server for mobile App - Nostromos",
+  "main": "index.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "genezio": "^3.2.3",
+    "jsonwebtoken": "^9.0.2",
+    "moment": "^2.30.1",
+    "mssql": "^11.0.1"
+  },
+  "packageManager": "yarn@1.22.21+sha1.1959a18351b811cdeedbd484a8f86c3cc3bbaf72"
+}
