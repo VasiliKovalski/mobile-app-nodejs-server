@@ -7,7 +7,7 @@ config.config();// Load environment variables from .env
 const config_sql =  {
   user: process.env.SQL_USER,
   password: process.env.SQL_PASSWORD,
-  server: process.env.HOST, // Use remote server IP or domain
+  server: process.env.HOST as string, // Use remote server IP or domain
   database: process.env.DATABASE,
   options: {
 
@@ -18,11 +18,11 @@ const config_sql =  {
 
 export const poolPromise = new sql.ConnectionPool(config_sql)
   .connect()
-  .then((pool) => {
+  .then((pool: any) => {
     console.log("✅ Connected to MS SQL Server");
     return pool;
   })
-  .catch((err) => {
+  .catch((err: any) => {
     console.error("❌ Database connection failed:", err);
   });
 

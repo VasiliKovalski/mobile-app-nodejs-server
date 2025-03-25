@@ -1,6 +1,6 @@
-import moment from "moment";
 
- async function getConfigValue(key) {
+
+ async function getConfigValue(key: string): Promise<string> {
     try {
       const response = await fetch('./config.json'); // Ensure correct path to the JSON file
       if (!response.ok) {
@@ -20,7 +20,7 @@ import moment from "moment";
     }
   }
 
-  export function formatDateIgnoringUTC(date) {
+  export function formatDateIgnoringUTC(date: Date): string {
     const year = date.getUTCFullYear();
     const month = String(date.getUTCMonth() + 1).padStart(2, "0"); // Months are 0-based
     const day = String(date.getUTCDate()).padStart(2, "0");
@@ -28,6 +28,7 @@ import moment from "moment";
     const minutes = String(date.getUTCMinutes()).padStart(2, "0");
     const seconds = String(date.getUTCSeconds()).padStart(2, "0");
   
-    return `${day}/${month}/${year}, ${hours}:${minutes}:${seconds}`;
+    //return `${day}-${month}-${year}, ${hours}:${minutes}:${seconds}`;
+    return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}`;
   }
   export default getConfigValue;

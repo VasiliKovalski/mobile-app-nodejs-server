@@ -9,7 +9,7 @@ backend:
     functions:
         - name: express
           path: .
-          entry: server.js
+          entry: dist\server.js
           type: httpServer
     scripts:
         deploy:

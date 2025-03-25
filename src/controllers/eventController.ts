@@ -2,11 +2,12 @@
 
 import sql from 'mssql'
 import { poolPromise } from '../config/db.js';
-
+import { type Request, type Response } from "express";
+import { type AuthRequest } from '../config/authMiddleware.js';
 import { formatDateIgnoringUTC } from '../config/util.js';
 
 
-// export const getCalls = async (res: Response): Promise<void> =>  {
+ // export const getCalls = async (res: Response): Promise<void> =>  {
 //   try {
 //     const pool = await poolPromise; 
 //     if (!pool) {
@@ -34,7 +35,7 @@ import { formatDateIgnoringUTC } from '../config/util.js';
   // };
   
 
-  async function getAdmin(eventId) {
+  async function getAdmin(eventId: number) {
     try {
       const pool = await poolPromise;
       if (!pool) {
@@ -53,7 +54,7 @@ import { formatDateIgnoringUTC } from '../config/util.js';
     }
   }
   
-  export const getEvents = async (req, res) => {  
+  export const getEvents = async (req: AuthRequest, res: Response) => {  
     try {
       const cDate = new Date();
       
@@ -82,7 +83,7 @@ import { formatDateIgnoringUTC } from '../config/util.js';
   };  
 
 
-  async function getAdminsByCall(callID) {
+  async function getAdminsByCall(callID: number) {
     try {
       const pool = await poolPromise;
       if (!pool) {
@@ -121,7 +122,7 @@ import { formatDateIgnoringUTC } from '../config/util.js';
     }
   }
 
-  async function getNotesByCallId(callID) {
+  async function getNotesByCallId(callID: number) {
     try {
       const pool = await poolPromise;
       if (!pool) {
@@ -144,7 +145,7 @@ import { formatDateIgnoringUTC } from '../config/util.js';
 
 
 
-   export const getFatEvents = async (req, res) => {
+   export const getFatEvents = async (req: AuthRequest, res: Response) => {
   
     try {
       const pool = await poolPromise;
@@ -168,21 +169,21 @@ import { formatDateIgnoringUTC } from '../config/util.js';
         
       // ✅ Fetch admins for each customer in parallel
       const enrichedCustomers = await Promise.all(
-        events.map(async (event) => {
+        events.map(async (event: any) => {
           const admin = await getAdminsByCall(event.callID); // Get admins for each customer
           const callNotes = await getNotesByCallId(event.callID); // Get admins for each customer
           event.destination = event.gPS_Location_Destination;
           
-          event.startTime_original = event.startTime;          
+          //event.startTime_original = event.startTime;          
           event.startTime = formatDateIgnoringUTC(event.startTime);
-          console.log('Converted Starttime: ',event.startTime)
-
-          event.endTime_original = event.endTime;          
-          event.endTime = formatDateIgnoringUTC(event.endTime);
-          console.log('Converted EndTime: ',event.endTime)
           
-          let end_date = new Date(event.endTime);
-          event.endTime = end_date.toLocaleString();
+          //console.log('Converted Starttime: ',event.startTime)
+
+          //event.endTime_original = event.endTime;          
+          event.endTime = formatDateIgnoringUTC(event.endTime);
+          //console.log('Converted EndTime__: ',event.endTime)
+          
+          
           
           for (const callNote of callNotes) {
             callNote.note = callNote.note.replace(/<br\s*\/?>/g, "\r\n");
