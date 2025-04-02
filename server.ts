@@ -4,6 +4,7 @@ import express from 'express'
 import cookieParser from "cookie-parser";
 import  userRoutes   from './src/routes/userRoutes.js';
 import eventRoutes from "./src/routes/eventRoutes.js";
+import invoiceRoutes from "./src/routes/invoiceRoutes.js";
 
 
 const port = process.env.PORT || 8080;
@@ -19,6 +20,7 @@ config.config();// Load environment variables from .env
 
 app.use("/api/users", userRoutes);
 app.use("/api/events", eventRoutes);
+app.use("/api/invoice", invoiceRoutes);
 
 app.get('/api', (req, res) => { 
      res.json({"users": ["user_19999988889999", "user_29999999", "user_39999999"]})
