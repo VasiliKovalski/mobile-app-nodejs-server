@@ -141,4 +141,8 @@ export const readFile_ = () =>
 export function removeNewlines(str: string): string {
   return str.replace(/\n/g, ""); // Removes all \n characters
 }
+
+export function isNullOrEmpty(str: string | null | undefined): boolean {
+  return !str || str.trim().length === 0;
+}
 export default getConfigValue;
