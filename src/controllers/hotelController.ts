@@ -41,16 +41,23 @@ import { IWebApiAccomodation } from '../interfaces/IWebApiAccomodation.js';
     .input("timeOffset", sql.Int, timeOffset) // Prevent SQL Injection
     .query(query);
 
+
+    
+
     //console.log(result.recordset)
           
         //    if (!result.recordset || result.recordset.length === 0) {
         //      res.status(404).json({ message: "No accomodation found" });
         // }
    
-       const accommodation: IWebApiAccomodation = result.recordset[0];
+       
+      const accommodation: IWebApiAccomodation = result.recordset[0];
+       if (result.recordset && result.recordset.length > 0) {
         
-        res.json(accommodation)
-           
+        accommodation.eventStartTime = formatDateIgnoringUTC(new Date(accommodation.eventStartTime ?? ''));
+        accommodation.eventEndTime = formatDateIgnoringUTC(new Date(accommodation.eventEndTime ?? ''));
+      } 
+      res.json(accommodation)
         
          
        } catch (err) {

@@ -9,7 +9,7 @@ export interface IWebApiAccomodation
     hotelPhysicalAddress?: string;
     eventDescription?: string;
     eventNotes?: string;
-    eventStartTime?: Date;
-    eventEndTime?: Date;
+    eventStartTime?: string;
+    eventEndTime?: string;
     
 }
