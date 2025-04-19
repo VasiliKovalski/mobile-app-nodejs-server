@@ -2,31 +2,29 @@ import sql from 'mssql'
 import { poolPromise } from '../config/db.js';
 import { type Request, type Response } from "express";
 import { type AuthRequest } from '../config/authMiddleware.js';
-import {  formatDateIgnoringUTC, getTimeDifference } from '../config/util.js';
-import { IWebApiCall } from '../interfaces/IWebApiCall.js';
+import {  formatDateIgnoringUTC } from '../config/util.js';
 
 
    export const GetCall = async (req: AuthRequest, res: Response) => {
   
    try {
          
-        
         const { customerId } = req.query;
+        if (!customerId || customerId.length === 0) {
+          res.status(404).json({ message: "No CustomerID supplied" });
+          return;
+        }
 
         const pool = await poolPromise;
          if (!pool) {
            throw new Error("Database connection failed.");
          }
           
-         // Query to fetch admins linked to the customer
-         
-         const searchQuery = `
-             select c.callBackDate, c.shortNotes, c.result from calls C  where CustomerID = @CustomerID
-       `;
+         const searchQuery = `select c.callBackDate, c.shortNotes, c.result from calls C  where CustomerID = @CustomerID`;
 
          
     const result = await pool.request()
-    .input("CustomerID", sql.Int, `${customerId}`) // Prevent SQL Injection
+    .input("CustomerID", sql.Int, `${customerId}`) 
     .query(searchQuery);
 
    

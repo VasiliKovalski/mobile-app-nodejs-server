@@ -3,7 +3,7 @@ import { poolPromise } from '../config/db.js';
 import { type Request, type Response } from "express";
 import { type AuthRequest } from '../config/authMiddleware.js';
 import { extractRefNumberFrom, formatDateIgnoringUTC, getTimeDifference } from '../config/util.js';
-import { IWebApiAccomodation } from '../interfaces/IWebApiAccomodation.js';
+
 
 
    export const GetTodayAccomodation = async (req: AuthRequest, res: Response) => {

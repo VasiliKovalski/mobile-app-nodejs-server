@@ -5,7 +5,6 @@ import { poolPromise } from '../config/db.js';
 import { type Request, type Response } from "express";
 import { type AuthRequest } from '../config/authMiddleware.js';
 import { extractRefNumberFrom, formatDateIgnoringUTC, getReceiverName, getTemplateFileName, getTimeDifference, loadEmailTemplates, removeNewlines,  } from '../config/util.js';
-import { IWebApiAccomodation } from '../interfaces/IWebApiAccomodation.js';
 import  { GoogleAuth }  from "google-auth-library";
 import  nodemailer  from 'nodemailer';
 import { getRandomValues } from 'crypto';

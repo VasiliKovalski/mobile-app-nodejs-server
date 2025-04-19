@@ -1,5 +1,5 @@
 
-export interface IWebApiAccomodation
+ interface IWebApiAccomodation
 {
     hotelID?: number;
     eventID?: number;
