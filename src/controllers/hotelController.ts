@@ -12,7 +12,7 @@ import { extractRefNumberFrom, formatDateIgnoringUTC, getTimeDifference } from '
          
         let timeOffset = getTimeDifference();
          //timeOffset = 18
-        //console.log(timeOffset);
+        console.log('VASYA');
 
         const pool = await poolPromise;
          if (!pool) {
