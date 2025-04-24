@@ -1,9 +1,49 @@
-options:
-  env:
-    - DOCKER_BUILDKIT=1
-
 steps:
-  - name: 'gcr.io/cloud-builders/docker'
-    args: ['build', '--progress=plain', '-t', 'gcr.io/mypostgresql-452821/myapp', '.']
+  - name: gcr.io/cloud-builders/docker
+    id: Build
+    env:
+      - DOCKER_BUILDKIT=1
+    args:
+      - build
+      - '--no-cache'
+      - '-t'
+      - >-
+        $_AR_HOSTNAME/$_AR_PROJECT_ID/$_AR_REPOSITORY/$REPO_NAME/$_SERVICE_NAME:$COMMIT_SHA
+      - .
+      - '-f'
+      - Dockerfile
+
+  - name: gcr.io/cloud-builders/docker
+    id: Push
+    args:
+      - push
+      - >-
+        $_AR_HOSTNAME/$_AR_PROJECT_ID/$_AR_REPOSITORY/$REPO_NAME/$_SERVICE_NAME:$COMMIT_SHA
+
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk:slim'
+    id: Deploy
+    entrypoint: gcloud
+    args:
+      - run
+      - deploy
+      - $_SERVICE_NAME
+      - '--image=$_AR_HOSTNAME/$_AR_PROJECT_ID/$_AR_REPOSITORY/$REPO_NAME/$_SERVICE_NAME:$COMMIT_SHA'
+      - '--platform=managed'
+      - '--region=$_DEPLOY_REGION'
+      - '--quiet'
+
 images:
-  - 'gcr.io/mypostgresql-452821/myapp'
+  - >-
+    $_AR_HOSTNAME/$_AR_PROJECT_ID/$_AR_REPOSITORY/$REPO_NAME/$_SERVICE_NAME:$COMMIT_SHA
+
+options:
+  substitutionOption: ALLOW_LOOSE
+  logging: CLOUD_LOGGING_ONLY
+
+substitutions:
+  _AR_HOSTNAME: us-central1-docker.pkg.dev
+  _AR_PROJECT_ID: mypostgresql-452821
+  _AR_REPOSITORY: cloud-run-source-deploy
+  _SERVICE_NAME: vasya
+  _DEPLOY_REGION: us-central1
+  _DOCKER_BUILDKIT: '1'
