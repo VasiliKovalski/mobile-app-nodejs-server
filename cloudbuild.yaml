@@ -1,0 +1,9 @@
+options:
+  env:
+    - DOCKER_BUILDKIT=1
+
+steps:
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['build', '--progress=plain', '-t', 'gcr.io/mypostgresql-452821/myapp', '.']
+images:
+  - 'gcr.io/mypostgresql-452821/myapp'
