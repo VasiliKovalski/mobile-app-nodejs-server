@@ -15,3 +15,19 @@ export interface IWebApiPrivateEmail {
     Adults = 2,
     School = 3,
   }
+
+
+  export const appSettings = {
+  KidsDateSpecified: "generalKidsReply.txt",
+  KidsGeneral: "NoCertainDates.txt",
+  KidsDateSpecifiedTravelFeeSpecified: "GeneralKidsReplyWithTravelFee.txt",
+  KidsGeneralTravelFeeSpecified: "NoCertainDatesWithTravelFee.txt",
+
+  AdultsNoFeesCertainDate: "AdultsNoFeesCertainDate.txt",
+  AdultsNoFeesNoDate: "AdultsNoFeesNoDate.txt",
+  AdultsTravelFeeCertainDate: "AdultsTravelFeeCertainDate.txt",
+  AdultsTravelFeeNoDate: "AdultsTravelFeeNoDate.txt",
+
+  SchoolGeneral: "SchoolGeneralReply.txt",
+  Declined: "declineTemplate.txt"
+};

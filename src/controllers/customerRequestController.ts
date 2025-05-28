@@ -1,55 +1,57 @@
 import { google } from "googleapis";
 import fs from "fs";
 import sql from 'mssql'
-import { poolPromise } from '../config/db.js';
+import { poolPromisePostGreSQL } from '../config/db.js';
 import { type Request, type Response } from "express";
 import { type AuthRequest } from '../config/authMiddleware.js';
-import { extractRefNumberFrom, formatDateIgnoringUTC, getReceiverName, getTemplateFileName, getTimeDifference, loadEmailTemplates, removeNewlines,  } from '../config/util.js';
+import { extractRefNumberFrom, formatDateIgnoringUTC, getReceiverName, getTemplateFileName, getTemplateFileNameNEW, getTimeDifference, loadEmailTemplates, removeNewlines,  } from '../config/util.js';
 import  { GoogleAuth }  from "google-auth-library";
 import  nodemailer  from 'nodemailer';
 import { getRandomValues } from 'crypto';
 import { IWebApiPrivateEmail } from '../interfaces/IWebApiPrivateEmail.js';
+import { Storage }  from '@google-cloud/storage';
 
 //----------------------------------------------------------------------------------------------------------------------------------------------------------
 async function getCredentials(typeCustomerId: number): Promise<{ credential: IWebApiCredential | null; errMessage: string }> {
   let errMessage = "";
 
   try {
-      const pool = await poolPromise;
+      const pool = await poolPromisePostGreSQL;
       if (!pool) throw new Error("Database connection failed.");
 
-      const result = await pool.request()
-          .input("typeCustomerID", sql.Int, typeCustomerId)
-          .query("SELECT * FROM Credential WHERE typeCustomerID = 2");
+      const typeCustomerId = 2;
 
-      const record = result.recordset[0];
+      const result = await pool.query(          `SELECT * FROM credential WHERE typecustomerid = $1`,
+      [typeCustomerId]
+    );
+      const record = result.rows[0];
 
       if (!record) {
           errMessage = "No credentials found for the given typeCustomerId.";
           return { credential: null, errMessage };
       }
 
-      const credential: IWebApiCredential = {
-          BankAccountNumber: record.BankAccountNumber,
-          AddressLine1: record.AddressLine1,
-          AddressLine2: record.AddressLine2,
-          AddressLine3: record.AddressLine3,
-          IsGSTRegistered: record.IsGSTRegistered,
-          IRD_Number: record.IRD_Number,
-          GSTNumber: record.GSTNumber,
-          GSTRate: record.GSTRate,
-          CompanyName: record.CompanyName,
-          PhoneNumber: record.PhoneNumber,
-          Mobile: record.Mobile,
-          Email: record.Email,
-          PersonName: record.PersonName,
-          GoldShowPrice: record.GoldShowPrice,
-          SilverShowPrice: record.SilverShowPrice,
-          BronzeShowPrice: record.BronzeShowPrice,
-          VIPShowPrice: record.VIPShowPrice,
-          FullAdultPrice: record.FullAdultPackagePrice,
-          HalfAdultPrice: record.partialAdultPackagePrice,
-      };
+const credential: IWebApiCredential = {
+    bankaccountnumber: record.bankaccountnumber,
+    addressline1: record.addressline1,
+    addressline2: record.addressline2,
+    addressline3: record.addressline3,
+    isgstregistered: record.isgstregistered,
+    ird_number: record.ird_number,
+    gstnumber: record.gstnumber,
+    gstrate: record.gstrate,
+    companyname: record.companyname,
+    phonenumber: record.phonenumber,
+    mobile: record.mobile,
+    email: record.email,
+    personname: record.personname,
+    goldshowprice: record.goldshowprice,
+    silvershowprice: record.silvershowprice,
+    bronzeshowprice: record.bronzeshowprice,
+    vipshowprice: record.vipshowprice,
+    fulladultprice: record.fulladultpackageprice,
+    halfadultprice: record.partialadultpackageprice,
+};
 
       return { credential, errMessage };
   } catch (error) {
@@ -59,10 +61,15 @@ async function getCredentials(typeCustomerId: number): Promise<{ credential: IWe
   }
 }
 
+
 //----------------------------------------------------------------------------------------------------------------------------------------------------------
    export const GetCustomerRequestsLight = async (req: AuthRequest, res: Response) => {
    try {
-        const pool = await poolPromise;
+        
+    
+    
+    
+    const pool = await poolPromisePostGreSQL;
          if (!pool) {
            throw new Error("Database connection failed.");
          }
@@ -71,21 +78,23 @@ async function getCredentials(typeCustomerId: number): Promise<{ credential: IWe
          
          const query = `select CustomerRequestID, Name, Email, DateCreated, Comment, PhoneNumber, RequestType from CustomerRequest where customerStatusid = 1 `;
          
-    const result = await pool.request()
+    //const result = await pool.
+    const result = await pool.query(query);
     
-    .query(query);
-       const requestSrc: Record<string, any>[] = result.recordset;
+    //.query(query);
+    const requestSrc: Record<string, any>[] = result.rows;   
+    const finalResult = requestSrc.map(request => ({
+         customerRequestID: request.customerrequestid,
+         name: request.name,
+         email: request.email,
+         total: request.total,
+         comment: request.comment,
+         requestType: request.requesttype,
+         phoneNumber: request.phonenumber,
+         dateCreated: request.datecreated,
+}));
 
-       const finalResult = requestSrc.map(request => ({
-        customerRequestID: request.CustomerRequestID,
-        name : request.Name,
-        email: request.Email,
-        total: request.Total,
-        comment:  request.Comment,
-        requestType:  request.RequestType,
-        phoneNumber:  request.PhoneNumber,
-        dateCreated: request.DateCreated,
-    }));
+    
 
         res.json(finalResult)
        } catch (err) {
@@ -96,17 +105,20 @@ async function getCredentials(typeCustomerId: number): Promise<{ credential: IWe
 //----------------------------------------------------------------------------------------------------------------------------------------------------------
   export const DeleteCustomerRequest = async (req: AuthRequest, res: Response) => {
     try {
-         const pool = await poolPromise;
+         const pool = await poolPromisePostGreSQL;
          const { customerRequestID } = req.query ;
          
           if (!pool) {
             throw new Error("Database connection failed.");
           }
            
-      const query = `UPDATE dbo.CustomerRequest SET CustomerStatusID = 2 WHERE customerRequestID = @customerRequestID`;
-     const result = await pool.request()
-     .input("customerRequestID", sql.Int, customerRequestID) // Prevent SQL Injection
-     .query(query);
+        const query = `
+            UPDATE CustomerRequest 
+              SET CustomerStatusID = 2 
+              WHERE customerRequestID = $1
+          `;
+
+      const result = await pool.query(query, [customerRequestID]);
  
      res.json();
 
@@ -129,6 +141,10 @@ async function getCredentials(typeCustomerId: number): Promise<{ credential: IWe
       }
   });  
     
+  const serviceAccount = JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT_JSON ?? '');
+
+  //console.log('service account client_id: ', serviceAccount.client_id);
+
   const educServiceTransporter = nodemailer.createTransport({
     host: "smtp.gmail.com",
     port: 465,
@@ -136,8 +152,8 @@ async function getCredentials(typeCustomerId: number): Promise<{ credential: IWe
     auth: {
       type: "OAuth2",
       user: process.env.OFFICE_EMAIL, 
-      serviceClient: process.env.GOOGLE_CLIENT_ID,
-      privateKey: process.env.GOOGLE_PRIVATE_KEY,
+      serviceClient: serviceAccount.client_id,
+      privateKey: serviceAccount.private_key,
     },
   });
 
@@ -146,7 +162,7 @@ async function getCredentials(typeCustomerId: number): Promise<{ credential: IWe
 
        
        var credentials = await getCredentials(2);
-       const emailTemplates = await loadEmailTemplates();
+       //const emailTemplates = await loadEmailTemplates();
 
        const emailData: IWebApiPrivateEmail = {
         receiverName: receiverName,
@@ -160,15 +176,40 @@ async function getCredentials(typeCustomerId: number): Promise<{ credential: IWe
         decline: decline                      // true or false
     };
 
-      let emailBody = getTemplateFileName(emailData, emailTemplates);
+      let filename = getTemplateFileNameNEW(emailData);
+    //   console.log(':', filename);
+
+    //    const storage = new Storage({    
+    //     projectId: 'mypostgresql-452821',
+    //   keyFilename: 'aaaa.json',
+    // });
+
+     const storage = new Storage(); // for Google Cloud
+
+
+// Access a bucket
+   const bucketName = 'customers-web-api-storage';
+   const bucket = storage.bucket(bucketName);
+
+async function readFile(filename: string) {
+  const file = bucket.file("PrivatePartyTemplates/" + filename);
+  const [contents] = await file.download();
+   return contents.toString();
+}
+
+//console.log(filename)
+
+let emailBody = await readFile(filename);
+//console.log(emailBody)
+
        emailBody = emailBody.replace("<NAME_CUSTOMER>", getReceiverName(emailData.receiverName, true));
        emailBody = emailBody.replace("<PROPOSED_DATE>", emailData.proposedDate.toString());
-       emailBody = emailBody.replace("<GOLD_SHOW_PRICE>", credentials.credential?.GoldShowPrice ?? "");
-       emailBody = emailBody.replace("<SILVER_SHOW_PRICE>", credentials.credential?.SilverShowPrice ?? "");
-       emailBody = emailBody.replace("<BRONZE_SHOW_PRICE>", credentials.credential?.BronzeShowPrice ?? "");
-       emailBody = emailBody.replace("<VIP_SHOW_PRICE>", credentials.credential?.VIPShowPrice ?? "");
-       emailBody = emailBody.replace("<FULL_ADULT_SHOW_PRICE>", credentials.credential?.FullAdultPrice ?? "");
-       emailBody = emailBody.replace("<ONE_ADULT_ACT_ONLY_PRICE>", credentials.credential?.HalfAdultPrice ?? "");
+       emailBody = emailBody.replace("<GOLD_SHOW_PRICE>", credentials.credential?.goldshowprice ?? "");
+       emailBody = emailBody.replace("<SILVER_SHOW_PRICE>", credentials.credential?.silvershowprice ?? "");
+       emailBody = emailBody.replace("<BRONZE_SHOW_PRICE>", credentials.credential?.bronzeshowprice ?? "");
+       emailBody = emailBody.replace("<VIP_SHOW_PRICE>", credentials.credential?.vipshowprice ?? "");
+       emailBody = emailBody.replace("<FULL_ADULT_SHOW_PRICE>", credentials.credential?.fulladultprice ?? "");
+       emailBody = emailBody.replace("<ONE_ADULT_ACT_ONLY_PRICE>", credentials.credential?.halfadultprice ?? "");
 
        emailBody = emailBody.replace("<TRAVEL_FEE>", emailData.travelFee);
     

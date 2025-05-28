@@ -1,4 +1,6 @@
 import sql from 'mssql'
+import { Pool } from 'pg';
+
 
 import config from 'dotenv'
 config.config();// Load environment variables from .env
@@ -16,6 +18,14 @@ const config_sql =  {
   },
 };
 
+
+const config_sql_PostGreSQL = {
+  connectionString: process.env.POSTGRES_DATABASE_URL, // or set properties manually
+  ssl: {
+    rejectUnauthorized: false, // Required for Neon
+  },
+};
+
 export const poolPromise = new sql.ConnectionPool(config_sql)
   .connect()
   .then((pool: any) => {
@@ -23,8 +33,22 @@ export const poolPromise = new sql.ConnectionPool(config_sql)
     return pool;
   })
   .catch((err: any) => {
-    console.error("❌ Database connection failed:", err);
+    console.error("❌ Database Interserver connection failed:", err);
   });
+
+
+  export const poolPromisePostGreSQL = new Pool(config_sql_PostGreSQL);
+
+poolPromisePostGreSQL
+  .connect()
+  .then(client => {
+    console.log("✅ Connected to PostgreSQL Server");
+    client.release(); // Release client back to the pool
+  })
+  .catch(err => {
+    console.error("❌ Database PostgreSQL connection failed:", err.stack);
+  });
+
 
 
   

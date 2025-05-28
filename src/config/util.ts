@@ -1,4 +1,4 @@
-import { IWebApiPrivateEmail, RequestTypeEnum } from '../interfaces/IWebApiPrivateEmail.js';
+import { appSettings, IWebApiPrivateEmail, RequestTypeEnum } from '../interfaces/IWebApiPrivateEmail.js';
 import { poolPromise } from '../config/db.js';
 import fs from "fs";
 
@@ -61,7 +61,41 @@ export function formatDateIgnoringUTC(date: Date): string {
     }
 }
 
+export function getTemplateFileNameNEW(emailData: IWebApiPrivateEmail): string {
+  if (emailData.decline) {
+    return appSettings["Declined"];
+  }
 
+  if (emailData.requestType === RequestTypeEnum.Kids) {
+    if (emailData.isAskingCertainDate) {
+      return emailData.isAskingTravelFee
+        ? appSettings["KidsDateSpecifiedTravelFeeSpecified"]
+        : appSettings["KidsDateSpecified"];
+    } else {
+      return emailData.isAskingTravelFee
+        ? appSettings["KidsGeneralTravelFeeSpecified"]
+        : appSettings["KidsGeneral"];
+    }
+  }
+
+  if (emailData.requestType === RequestTypeEnum.Adults) {
+    if (emailData.isAskingCertainDate) {
+      return emailData.isAskingTravelFee
+        ? appSettings["AdultsTravelFeeCertainDate"]
+        : appSettings["AdultsNoFeesCertainDate"];
+    } else {
+      return emailData.isAskingTravelFee
+        ? appSettings["AdultsTravelFeeNoDate"]
+        : appSettings["AdultsNoFeesNoDate"];
+    }
+  }
+
+  if (emailData.requestType === RequestTypeEnum.School) {
+    return appSettings["SchoolGeneral"];
+  }
+
+  return "";
+}
 export async function loadEmailTemplates(): Promise<Record<string, string>> {
   try {
       const pool = await poolPromise;
