@@ -175,6 +175,7 @@ import { formatDateIgnoringUTC } from '../config/util.js';
           event.destination = event.gPS_Location_Destination;
           
           //event.startTime_original = event.startTime;          
+          console.log('MS SQL startTime: ',event.startTime)
           event.startTime = formatDateIgnoringUTC(event.startTime);
           
           //console.log('Converted Starttime: ',event.startTime)

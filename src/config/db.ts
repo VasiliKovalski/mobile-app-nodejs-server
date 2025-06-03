@@ -26,15 +26,20 @@ const config_sql_PostGreSQL = {
   },
 };
 
-export const poolPromise = new sql.ConnectionPool(config_sql)
-  .connect()
-  .then((pool: any) => {
-    console.log("✅ Connected to MS SQL Server");
-    return pool;
-  })
-  .catch((err: any) => {
-    console.error("❌ Database Interserver connection failed:", err);
-  });
+// export const poolPromise = new sql.ConnectionPool(config_sql)
+//   .connect()
+//   .then((pool: any) => {
+//     console.log("✅ Connected to MS SQL Server");
+//     return pool;
+//   })
+//   .catch((err: any) => {
+//     console.error("❌ Database Interserver connection failed:", err);
+//   });
+
+
+
+export const poolPromise: Promise<sql.ConnectionPool | undefined> = Promise.resolve(undefined);
+
 
 
   export const poolPromisePostGreSQL = new Pool(config_sql_PostGreSQL);

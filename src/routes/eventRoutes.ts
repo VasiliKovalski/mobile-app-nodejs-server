@@ -1,5 +1,7 @@
 import express from 'express'
 import {   getEvents, getFatEvents } from '../controllers/eventController.js'
+import {   getFatEventsPostgress } from '../controllers/Postgress/eventControllerPostgress.js'
+
 import  { authenticateUser, authenticateUserAPI }  from '../config/authMiddleware.js';
 
 
@@ -7,11 +9,12 @@ import  { authenticateUser, authenticateUserAPI }  from '../config/authMiddlewar
 
 const router = express.Router();
 
-
-//router.get("/", getCalls);
-//router.get("/some", getSomeCalls);
-router.get("/GetEvents_OLD", getEvents);
-//router.get("/GetEvents",  getFatEvents );
+if (process.env.USE_POSTGRESS) {
+router.get("/GetEvents", authenticateUserAPI, getFatEventsPostgress);
+} else {
+  
 router.get("/GetEvents", authenticateUserAPI, getFatEvents);
+}
+
 
 export default router;

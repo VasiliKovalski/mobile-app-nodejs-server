@@ -18,3 +18,14 @@ interface IRawShow {
     datePerformance: string;
   }
   
+
+  interface IRawShowPostgress {
+    showid: number;
+    numberofpeople: number;
+    programid: number;
+    price: number;
+    notes: string;
+    customerid: number;
+    dateperformance:  Date;
+  }
+

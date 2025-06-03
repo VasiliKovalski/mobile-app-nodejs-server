@@ -8,7 +8,8 @@ import {  formatDateIgnoringUTC } from '../config/util.js';
    export const GetCall = async (req: AuthRequest, res: Response) => {
   
    try {
-         
+      console.log(process.env.USE_POSTGRESS)
+    console.log('MS SQL is in use');    
         const { customerId } = req.query;
         if (!customerId || customerId.length === 0) {
           res.status(404).json({ message: "No CustomerID supplied" });
