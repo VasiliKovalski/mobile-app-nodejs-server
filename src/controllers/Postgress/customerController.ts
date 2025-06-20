@@ -2,6 +2,7 @@ import { poolPromisePostGreSQL } from '../../config/db.js';
 import {  type Response } from "express";
 import { type AuthRequest } from '../../config/authMiddleware.js';
 import {  getTimeDifference } from '../../config/util.js';
+import { collapseTextChangeRangesAcrossMultipleVersions } from 'typescript/lib/typescript.js';
 
 
 
@@ -69,19 +70,15 @@ export const GetTodayCustomersPostgress = async (req: AuthRequest, res: Response
     const pool = await poolPromisePostGreSQL;
     if (!pool) throw new Error("Database connection failed.");
 
-    // Convert timeOffset hours to interval (PostgreSQL uses intervals for date math)
-    const offsetHours = getTimeDifference();
-
-   const query = `
+  const query = `
   SELECT name, custid AS "customerID", typecustomerid
   FROM customer_calls
-  WHERE duedate >= DATE_TRUNC('day', CURRENT_TIMESTAMP + ($1 || ' hours')::interval)
-    AND duedate < DATE_TRUNC('day', CURRENT_TIMESTAMP + ($1 || ' hours')::interval) + INTERVAL '1 day'
+WHERE (duedate AT TIME ZONE 'Pacific/Auckland')::date = (CURRENT_TIMESTAMP AT TIME ZONE 'Pacific/Auckland')::date
     AND status IN (5, 10)
   ORDER BY duedate;
 `;
 
-const result = await pool.query(query, [offsetHours.toString()]);
+const result = await pool.query(query);
 
     res.json(result.rows);
   } catch (err) {

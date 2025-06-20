@@ -148,10 +148,13 @@ export const getFatEventsPostgress = async (req: AuthRequest, res: Response) => 
     }
 
     const { StartDate } = req.query;
+    const date = new Date(StartDate as string);
+    const utcString = date.toISOString();
+    
 
     const result = await pool.query(
       `SELECT * FROM get_events($1)`, // assuming your DB function returns snake_case
-      [StartDate]
+      [utcString]
     );
 
     const events = result.rows;
@@ -171,8 +174,8 @@ export const getFatEventsPostgress = async (req: AuthRequest, res: Response) => 
         return {
           eventID: event.eventid,
           description: event.description,
-          startTime: formatDateIgnoringUTC(event.starttime),
-          endTime: formatDateIgnoringUTC(event.endtime),
+          startTime: event.starttime,
+          endTime: event.endtime,
           calendarEventId: event.calendareventid,
           customerID: event.customerid,
           customerName: event.customername,
@@ -202,8 +205,5 @@ export const getFatEventsPostgress = async (req: AuthRequest, res: Response) => 
     res.status(500).json({ error: "Database error", details: err });
   }
 };
-
-
-
 
   export default getFatEventsPostgress;

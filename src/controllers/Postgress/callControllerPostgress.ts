@@ -30,7 +30,7 @@ import {  formatDateIgnoringUTC } from '../../config/util.js';
     const finalResult = callSrc.map(call => ({
         shortNotes: call.shortnotes,         // PostgreSQL columns are usually lowercase unless quoted
         result: call.result,
-        callBackDate: formatDateIgnoringUTC(call.callbackdate),
+        callBackDate: call.callbackdate,
     }));
 
 

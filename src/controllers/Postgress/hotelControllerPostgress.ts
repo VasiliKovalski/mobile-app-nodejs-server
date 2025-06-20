@@ -5,7 +5,6 @@ import {  formatDateIgnoringUTC, getTimeDifference } from '../../config/util.js'
 
   export const GetTodayAccomodationPostgress = async (req: AuthRequest, res: Response) => {
   try {
-    const timeOffset = getTimeDifference(); // returns an integer like +12, -5 etc.
 
     const pool = await poolPromisePostGreSQL;
     if (!pool) {
@@ -25,17 +24,13 @@ import {  formatDateIgnoringUTC, getTimeDifference } from '../../config/util.js'
         H.physicaladdress AS "hotelPhysicalAddress"
       FROM event E
       INNER JOIN hotel H ON H.hotelid = E.hotelid
-      WHERE CURRENT_TIMESTAMP + INTERVAL '${timeOffset} hours' BETWEEN E.starttime AND E.endtime
+      WHERE CURRENT_TIMESTAMP BETWEEN E.starttime AND E.endtime
       LIMIT 1;
     `;
 
+
     const result = await pool.query(query);
     const accommodation: IWebApiAccomodation | undefined = result.rows[0];
-
-    if (accommodation) {
-      accommodation.eventStartTime = formatDateIgnoringUTC(new Date(accommodation.eventStartTime ?? ""));
-      accommodation.eventEndTime = formatDateIgnoringUTC(new Date(accommodation.eventEndTime ?? ""));
-    }
 
     res.json(accommodation || {});
   } catch (err) {

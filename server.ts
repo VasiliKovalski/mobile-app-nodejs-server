@@ -19,7 +19,13 @@ const port = process.env.PORT || 8080;
 const app  = express();
 
 app.use(cookieParser()); 
-app.use(cors()); // Allows all origins
+
+app.use(cors({
+  origin: ['https://your-frontend.com', 'http://localhost:5173'],
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  credentials: true,  
+}));
+
 app.use(express.json()); 
 
 config.config();// Load environment variables from .env

@@ -45,12 +45,12 @@ export const getInvoiceDuefunctionPostgress = async (
       invoiceID: invoice.invoiceid,
       total: parseFloat(invoice.total),
       status: invoice.status,
-      dateCreated: formatDateIgnoringUTC(invoice.datecreated),
+      dateCreated: invoice.datecreated,
       invoiceFileName: invoice.filename,
       referenceData: extractRefNumberFrom(invoice.filename),
       reminderSentDate: invoice.remindersentdate,
       reminderSent: invoice.remindersent,
-      date: formatDateIgnoringUTC(invoice.date),
+      date: invoice.date,
       reminderOpened: invoice.opened === null ? 0 : invoice.opened,
     }));
 
