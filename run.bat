@@ -4,7 +4,7 @@ SETLOCAL
 REM === Set your Docker Hub username and image name ===
 set DOCKER_USERNAME=vasilikovalski
 set IMAGE_NAME=nostromo-server-js
-set TAG=latest-9
+set TAG=latest-47
 
 echo Building Docker image...
 docker build -t %DOCKER_USERNAME%/%IMAGE_NAME%:%TAG% .

@@ -1,5 +1,7 @@
 import { type Request, type Response, type NextFunction } from "express";
 import jwt from "jsonwebtoken";
+import { loadAppSettings } from "./util.js";
+
 
 const SECRET_KEY = process.env.JWT_SECRET || "your-secret-key";
 
@@ -40,11 +42,12 @@ export const authenticateUserAPI = async (
   next: NextFunction
 ): Promise<void> => {
   try {
+      const settings = await loadAppSettings('settings.json');
 
     const header = req.headers["api_secret"];
     //console.log('HEADER: ',header);
 
-    if (header != process.env.API_SECRET) {
+    if (header != settings?.API_SECRET) {
       res.status(401).json({ message: "Unauthorized" });
       return;
     }

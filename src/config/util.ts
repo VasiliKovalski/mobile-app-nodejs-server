@@ -1,8 +1,63 @@
+import { promises as fs } from 'fs';
+import * as path from 'path';
+import {  Storage }  from '@google-cloud/storage';
+import { fileURLToPath } from 'url';
+import { dirname, join } from 'path';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
+import { Bucket } from '@google-cloud/storage/build/cjs/src';
 import { appSettings, IWebApiPrivateEmail, RequestTypeEnum } from '../interfaces/IWebApiPrivateEmail.js';
 import { poolPromise } from '../config/db.js';
-import fs from "fs";
 
- async function getConfigValue(key: string): Promise<string> {
+interface Settings {
+  POSTGRES_DATABASE_URL: string;
+  OFFICE_EMAIL:string;
+  API_SECRET:string;
+  VASKOVALSKI_EMAIL:string;
+  VASKOVALSKI_EMAIL_PASSWORD:string;
+  VASKOVALSKI:string;
+  client_id: string;
+  private_key:string;
+}
+
+
+
+export const readFileStorage = async (folder: string, filename: string, bucket: Bucket) => {
+  const file = bucket.file(folder + filename);
+  const [contents] = await file.download();
+   return contents.toString();
+}
+
+export const loadAppSettings = async (fileName: string): Promise<Settings | null> => {
+  // Use local settings file
+  if (process.env.LOCAL === 'true') {
+    try {
+      //const settingsPath = path.join(__dirname, fileName); // just in case we need some knowledge how to read from THIS folder
+      const data = await fs.readFile(fileName, 'utf-8');
+      const allSettings = JSON.parse(data);
+      return allSettings as Settings;
+    } catch (err) {
+      console.error('Error reading local settings file:', err);
+      return null;
+    }
+  } else {
+  // Use Google Cloud / ENV variable
+  
+    try {
+      return JSON.parse(process.env.SETTINGS ?? '') as Settings;
+    } catch (err) {
+      console.error('Failed to parse SETTINGS env variable:', err);
+      return null;
+    }
+  }
+
+  // No valid settings source
+  console.error('No settings source found: neither LOCAL nor SETTINGS env variable is defined.');
+  return null;
+}; 
+async function getConfigValue(key: string): Promise<string> {
     try {
       const response = await fetch('./config.json'); // Ensure correct path to the JSON file
       if (!response.ok) {
@@ -161,16 +216,16 @@ export function getReceiverName(receiverName: string, splitName: boolean, ignore
   return receiverName + ",";
 }  
 
-export const readFile_ = () => 
-{
-  const rawData = fs.readFileSync("vasya.json", "utf8");
+// export const readFile_ = () => 
+// {
+//   const rawData = fs.readFileSync("vasya.json", "utf8");
 
-  // Parse JSON data
-  const jsonData = JSON.parse(rawData);
+//   // Parse JSON data
+//   const jsonData = JSON.parse(rawData);
   
-  console.log(jsonData);
+//   console.log(jsonData);
 
-}
+// }
 
 export function removeNewlines(str: string): string {
   return str.replace(/\n/g, ""); // Removes all \n characters
@@ -179,4 +234,52 @@ export function removeNewlines(str: string): string {
 export function isNullOrEmpty(str: string | null | undefined): boolean {
   return !str || str.trim().length === 0;
 }
+
+
+
+export const getGoogleBucket = async (bucketName: string) : Promise<Bucket> => {
+
+var storage : Storage;
+  if (process.env.LOCAL === 'true') {
+        storage = new Storage({    
+        projectId: 'mypostgresql-452821',
+        keyFilename: 'generalAccount.json',
+    });
+  } 
+   else 
+    storage = new Storage(); // for Google Cloud
+  
+   const bucket = storage.bucket(bucketName);
+   return bucket;
+}
+
+
+
+type GoogleAuthSettings = {
+  client_id: string;
+  private_key: string;
+};
+
+export const loadGoogleAuthSettings = async (): Promise<GoogleAuthSettings> => {
+  let client_id = '';
+  let private_key = '';
+
+  if (process.env.LOCAL === 'true') {
+    const googleSettings = await loadAppSettings('googleAuth.json'); // assumes this file contains { client_id, private_key }
+    client_id = googleSettings?.client_id ?? '';
+    private_key = googleSettings?.private_key ?? '';
+  } else {
+    try {
+      const serviceAccount = JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT_JSON ?? '{}');
+      client_id = serviceAccount?.client_id ?? '';
+      private_key = serviceAccount?.private_key ?? '';
+    } catch (err) {
+      console.error('Failed to parse GOOGLE_SERVICE_ACCOUNT_JSON:', err);
+    }
+  }
+
+  return { client_id, private_key };
+};
+
+
 export default getConfigValue;
